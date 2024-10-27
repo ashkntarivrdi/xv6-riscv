@@ -693,3 +693,15 @@ procdump(void)
     printf("\n");
   }
 }
+
+uint32 
+get_running_processes(void) 
+{
+  struct proc *p;
+  int count = 0;
+  for(p = proc; p < &proc[NPROC]; p++){
+    if(p->state == RUNNING)
+      count++;
+  }
+  return count;
+}
