@@ -5,6 +5,8 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo_data.h"
+#include "process_data.h"
 
 uint64
 sys_exit(void)
@@ -35,17 +37,16 @@ sys_wait(void)
   return wait(p);
 }
 
-uint64
-sys_sbrk(void)
-{
-  uint64 addr;
-  int n;
+uint64 sys_sbrk(void) {
+    uint64 addr;
+    int n;
 
-  argint(0, &n);
-  addr = myproc()->sz;
-  if(growproc(n) < 0)
-    return -1;
-  return addr;
+    argint(0, &n); 
+    struct proc *p = myproc();
+    addr = p->sz; 
+    if (growproc(n) < 0)
+        return -1; 
+    return addr;
 }
 
 uint64

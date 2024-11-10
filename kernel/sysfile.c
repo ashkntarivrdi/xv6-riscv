@@ -17,6 +17,7 @@
 #include "fcntl.h"
 #include "sysinfo_data.h"
 #include "kalloc.h"
+#include "process_data.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -521,4 +522,37 @@ sys_sysinfo(void)
   if(copyout(p->pagetable, addr, (char*)&information, sizeof(information)) < 0)
     return -1;
   return 0; 
+}
+
+uint64
+sys_nextproc(void) {
+  struct process_data proc_d;
+  int before_pid;
+  uint64 addr;
+  argint(0, &before_pid);
+  argaddr(1, &addr);
+
+  extern struct proc proc[NCPU];
+  struct proc *p;
+  struct proc *current_proc = myproc();
+
+  for (p = proc; p < &proc[NCPU]; p++) {
+      if (p->state == SLEEPING || p->state == RUNNABLE || 
+      p->state == RUNNING || p->state == ZOMBIE) {
+        if (p-> pid > before_pid) {
+          proc_d.pid = p->pid;
+          if (p->parent == 0)
+            proc_d.parent_id = 0;
+          else
+            proc_d.parent_id = p->parent->pid;
+
+          proc_d.state = p->state;
+          proc_d.heap_size = p->sz;
+          strncpy(proc_d.name, p->name, sizeof(proc_d.name) - 1);
+          
+          return copyout(current_proc->pagetable, addr, (char *)&proc_d, sizeof(proc_d));
+        }
+      }
+  }
+  return -1;
 }
