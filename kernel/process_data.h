@@ -6,4 +6,5 @@ struct process_data {
     int heap_size;
     enum procstate state;
     char name[16];
+    int nice_value;
 };

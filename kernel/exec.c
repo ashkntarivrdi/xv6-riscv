@@ -121,6 +121,7 @@ exec(char *path, char **argv)
   safestrcpy(p->name, last, sizeof(p->name));
     
   // Commit to the user image.
+  p->nice_value = myproc()->nice_value;
   oldpagetable = p->pagetable;
   p->pagetable = pagetable;
   p->sz = sz;

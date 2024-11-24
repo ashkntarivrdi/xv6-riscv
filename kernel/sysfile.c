@@ -546,6 +546,7 @@ sys_nextproc(void) {
           else
             proc_d.parent_id = p->parent->pid;
 
+          proc_d.nice_value = p->nice_value;
           proc_d.state = p->state;
           proc_d.heap_size = p->sz;
           strncpy(proc_d.name, p->name, sizeof(proc_d.name) - 1);
@@ -555,4 +556,24 @@ sys_nextproc(void) {
       }
   }
   return -1;
+}
+
+uint64
+sys_nice(void) {
+  struct proc *p;
+  int inc;
+  argint(0, &inc);
+
+  p = myproc();
+  acquire(&p->lock);
+  p->nice_value = p->nice_value+inc;
+  if(p->nice_value > 19){
+    p->nice_value = 19;
+  }
+  else if(p->nice_value < -20) {
+    p->nice_value = -20;
+  }
+  release(&p->lock);
+
+  return p->nice_value;
 }
