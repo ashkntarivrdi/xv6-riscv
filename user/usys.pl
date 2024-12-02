@@ -38,4 +38,3 @@ entry("sleep");
 entry("uptime");
 entry("sysinfo");
 entry("nextproc");
-entry("nice");

@@ -124,7 +124,6 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
-  p->nice_value = 0;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -296,10 +295,6 @@ fork(void)
     return -1;
   }
   np->sz = p->sz;
-  // printf("np->nice_value: %d\n", np->nice_value);
-  // printf("p->nice_value: %d\n", p->nice_value);
-  // printf("p->pid: %d\n", p->pid);
-  // np->nice_value = p->nice_value;
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
@@ -317,12 +312,6 @@ fork(void)
 
   pid = np->pid;
 
-  release(&np->lock);
-
-  acquire(&np->lock);
-  np->nice_value = p->nice_value;
-  // printf("np->nice_value: %d\n", np->nice_value);
-  // printf("p->nice_value: %d\n", p->nice_value);
   release(&np->lock);
 
   acquire(&wait_lock);
@@ -465,27 +454,13 @@ scheduler(void)
     // processes are waiting.
     intr_on();
 
-    int lowest_nice_value = 19;
-    struct proc *highest_priority_proc;
-
+    int found = 0;
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
-        // Save the process with lowest nice value.  It is the process's job
+        // Switch to chosen process.  It is the process's job
         // to release its lock and then reacquire it
         // before jumping back to us.
-        if(p->nice_value < lowest_nice_value){
-          lowest_nice_value = p->nice_value;
-          highest_priority_proc = p;
-        }
-      }
-      release(&p->lock);
-    }
-
-    if(highest_priority_proc) {
-      p = highest_priority_proc;
-      acquire(&p->lock);
-      if(p->state == RUNNABLE) {
         p->state = RUNNING;
         c->proc = p;
         swtch(&c->context, &p->context);
@@ -493,10 +468,11 @@ scheduler(void)
         // Process is done running for now.
         // It should have changed its p->state before coming back.
         c->proc = 0;
+        found = 1;
       }
       release(&p->lock);
     }
-    else {
+    if(found == 0) {
       // nothing to run; stop running on this core until an interrupt.
       intr_on();
       asm volatile("wfi");

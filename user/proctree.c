@@ -13,8 +13,8 @@ void display_process_tree(struct process_data* proc_list[], int parent_ids[MAX_P
     for (int i = 0; i < level; i++) {
         printf("  ");
     }
-    printf("└─ pid: %d, name: %s, state: %d, heap size: %d, parent id: %d, nice value: %d\n",
-           proc->pid, proc->name, proc->state, proc->heap_size, proc->parent_id, proc->nice_value);
+    printf("└─ pid: %d, name: %s, state: %d, heap_size: %d, parent_id: %d\n",
+           proc->pid, proc->name, proc->state, proc->heap_size, proc->parent_id);
 
     for (int j = idx; j < total_procs; j++) {
         if (parent_ids[j] == proc->pid) {
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     uint64 result;
     int current_pid = 0;
     int proc_count = 0;
-    // nice(2);
+
     while (1) {
         memset(&temp_proc, 0, sizeof(struct process_data));
         result = nextproc(current_pid, &temp_proc);
@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
             printf("Error: Memory allocation failed\n");
             break;
         }
+        
         *new_proc = temp_proc;
         parent_ids[proc_count] = new_proc->parent_id;
         procs[proc_count++] = new_proc;

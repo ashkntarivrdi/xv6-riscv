@@ -103,7 +103,6 @@ extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_sysinfo(void);
 extern uint64 sys_nextproc(void);
-extern uint64 sys_nice(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -131,7 +130,6 @@ static uint64 (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_sysinfo] sys_sysinfo,
 [SYS_nextproc] sys_nextproc,
-[SYS_nice]    sys_nice,
 };
 
 void

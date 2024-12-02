@@ -26,7 +26,6 @@ int sleep(int);
 int uptime(void);
 int sysinfo(struct sysinfo_data* information);
 int nextproc(int before_pid, struct process_data* proc);
-int nice(int inc);
 
 // ulib.c
 int stat(const char*, struct stat*);
